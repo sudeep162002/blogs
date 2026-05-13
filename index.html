@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Sudeep's Blogs</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, Arial;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+h1 {
+  margin: 0;
+}
+
+.blog-card {
+  display: block;
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  text-decoration: none;
+  color: inherit;
+  transition: 0.2s;
+}
+
+.blog-card:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+.blog-card h2 {
+  margin: 0 0 8px;
+}
+
+.blog-card p {
+  margin: 0;
+  color: #64748b;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #2563eb;
+  font-weight: bold;
+}
+
+iframe {
+  width: 100%;
+  height: 90vh;
+  border: none;
+  border-radius: 12px;
+}
+
+article {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const blogs = [
+  {
+    slug: "event-loop-from-first-principles",
+    title: "Event Loop From First Principles",
+    description: "Deep explanation of event loop & connection pools",
+    file: "posts/event-loop-blog/event-loop-from-first-principles.html"
+  }
+];
+
+const app = document.getElementById("app");
+const params = new URLSearchParams(window.location.search);
+const selectedPost = params.get("post");
+
+function renderList() {
+  app.innerHTML = `
+    <header>
+      <h1>Sudeep's Blogs</h1>
+      <p style="color:#64748b;">Simple technical notes</p>
+    </header>
+
+    ${blogs.map(blog => `
+      <a class="blog-card" href="?post=${blogitle}</h2>
+        <p>${blog.description}</p>
+      </a>
+    `).join("")}
+  `;
+}
+
+async function renderBlog(slug) {
+  const blog = blogs.find(b => b.slug === slug);
+
+  if (!blog) {
+    app.innerHTML = `<p>Blog not found</p>`;
+    return;
+  }
+
+  // ✅ LOCAL FILE CASE → use iframe
+  if (location.protocol === "file:") {
+    app.innerHTML = `
+      <a class="back" hrefiframe src="${blog.file} `;
+    return;
+  }
+
+  // ✅ GITHUB CASE → fetch and inline
+  try {
+    const res = await fetch(blog.file);
+
+    if (!res.ok) throw new Error();
+
+    const html = await res.text();
+
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    const content =
+      doc.querySelector("#content")?.innerHTML ||
+      doc.body.innerHTML;
+
+    app.innerHTML = `
